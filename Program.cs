@@ -1,3 +1,4 @@
+using System.Configuration;
 namespace MessageCrypter;
 
 static class Program
