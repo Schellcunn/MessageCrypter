@@ -37,14 +37,7 @@ public partial class Form1 : Form
 
     private void txtOutput_TextChanged(object sender, EventArgs e)
         => UpdateButtonState();
-
-    //Button handlers
-    private void btnEncrypt_Click(object sender, EventArgs e)
-    {
-        
-        
-        txtOutput.Text = "-----BEGIN PGP MESSAGE-----\n...placeholder...\n-----END PGP MESSAGE-----";
-    }
+  
 
     private void btnDecrypt_Click(object sender, EventArgs e)
     {
@@ -107,4 +100,41 @@ public partial class Form1 : Form
                 MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
+    // add more functions here
+    private void btnEncrypt_Click(object sender, EventArgs e)
+    {
+        try
+        {
+            var myKey        = lstMyKeys.SelectedItem as GpgKey;
+            var recipientKey = lstRecipientKeys.SelectedItem as GpgKey;
+
+            if (myKey == null || recipientKey == null)
+            {
+                MessageBox.Show("Please select both your key and a recipient key.",
+                    "Missing selection", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Encrypt to the recipient, and also to yourself so you can read the sent copy.
+            var recipients = new List<string>
+            {
+                recipientKey.Fingerprint,
+                myKey.Fingerprint
+            };
+
+            // Sign with your own key.
+            var ciphertext = InputEncrypt.Encrypt(
+                txtInput.Text,
+                recipients,
+                signWithFingerprint: myKey.Fingerprint);
+
+            txtOutput.Text = ciphertext;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Encryption failed:\n\n{ex.Message}",
+                "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
+    // add under here
 }
