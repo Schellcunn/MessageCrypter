@@ -1,5 +1,7 @@
 using System;
 using System.Windows.Forms;
+using System.Linq;
+
 
 namespace MessageCrypter;
 
@@ -8,6 +10,7 @@ public partial class Form1 : Form
     public Form1()
     {
         InitializeComponent();
+        LoadKeys();
         UpdateButtonState();
     }
 
@@ -67,5 +70,41 @@ public partial class Form1 : Form
             timer.Dispose();
         };
         timer.Start();
+    }
+    private void LoadKeys()
+    {
+        try
+        {
+            var keys = FetchKeys.GetPublicKeys();
+
+            lstMyKeys.Items.Clear();
+            lstRecipientKeys.Items.Clear();
+
+            foreach (var key in keys)
+            {
+                // Show all keys in both lists, the user picks which to use
+                lstMyKeys.Items.Add(key);
+                lstRecipientKeys.Items.Add(key);
+            }
+
+            if (keys.Count == 0)
+            {
+                MessageBox.Show(
+                    "No PGP keys found in your GnuPG keyring.\n\n" +
+                    "Generate or import a key pair in Kleopatra first.",
+                    "No keys found",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+        }
+        catch (FileNotFoundException ex)
+        {
+            MessageBox.Show(ex.Message, "GnuPG not found",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to load keys: {ex.Message}", "Error",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }
